@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Opportunity Portal</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#222}
+  header{background:#1f4e79;color:#fff;padding:14px 24px}
+  main{max-width:1000px;margin:20px auto;padding:0 16px}
+  .card{background:#fff;border-radius:6px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px #0002}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left;font-size:14px}
+  button{padding:5px 10px;border:0;border-radius:4px;cursor:pointer;color:#fff;background:#1f4e79}
+  button.warn{background:#c77d00} button.danger{background:#b00020} button.grey{background:#777}
+  input,textarea,select{width:100%;padding:7px;margin:3px 0 10px;box-sizing:border-box}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  .full{grid-column:1/3}
+  .err{color:#b00020;font-size:12px;margin-top:-8px;margin-bottom:8px;min-height:0}
+  #msg{padding:10px;border-radius:4px;margin-bottom:16px;display:none}
+  .ok{background:#d9f2e0;color:#14532d} .bad{background:#fde2e2;color:#7f1d1d}
+  .Open{color:#14803c;font-weight:bold} .Closed{color:#b00020;font-weight:bold}
+</style>
+</head>
+<body>
+<header><h2 style="margin:0">University Research Opportunity Portal</h2></header>
+<main>
+  <div id="msg"></div>
+
+  <div class="card">
+    <h3>All Research Opportunities</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Title</th><th>Faculty</th><th>Positions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="list"></tbody>
+    </table>
+  </div>
+
+  <div class="card" id="details" style="display:none"></div>
+
+  <div class="card">
+    <h3 id="formTitle">Add New Opportunity</h3>
+    <form id="form" novalidate>
+      <input type="hidden" id="id">
+      <div class="grid">
+        <div><label>Title</label><input id="title"><div class="err" data-for="title"></div></div>
+        <div><label>Research Area</label><input id="research_area"><div class="err" data-for="research_area"></div></div>
+        <div><label>Faculty Name</label><input id="faculty_name"><div class="err" data-for="faculty_name"></div></div>
+        <div><label>Department</label><input id="department"><div class="err" data-for="department"></div></div>
+        <div class="full"><label>Description</label><textarea id="description" rows="3"></textarea><div class="err" data-for="description"></div></div>
+        <div><label>Required Skills</label><input id="required_skills"><div class="err" data-for="required_skills"></div></div>
+        <div><label>Available Positions</label><input id="positions" type="number" min="1"><div class="err" data-for="positions"></div></div>
+        <div><label>Application Deadline</label><input id="deadline" type="date"><div class="err" data-for="deadline"></div></div>
+        <div><label>Status</label><select id="status"><option>Open</option><option>Closed</option></select></div>
+      </div>
+      <button type="submit" id="saveBtn">Save</button>
+      <button type="button" class="grey" onclick="resetForm()">Clear</button>
+    </form>
+  </div>
+</main>
+
+<script>
+const API = "/api/opportunities";
+const FIELDS = ["title","description","research_area","faculty_name","department","required_skills","positions","deadline","status"];
+const REQUIRED = FIELDS.filter(f => f !== "status");
+
+function showMsg(text, ok) {
+  const m = document.getElementById("msg");
+  m.textContent = text; m.className = ok ? "ok" : "bad"; m.style.display = "block";
+  setTimeout(() => m.style.display = "none", 4000);
+}
+
+async function request(url, method = "GET", body) {
+  const res = await fetch(url, {
+    method, headers: {"Content-Type": "application/json"},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+async function loadAll() {
+  try {
+    const rows = await request(API);
+    document.getElementById("list").innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.id}</td><td>${esc(r.title)}</td><td>${esc(r.faculty_name)}</td>
+        <td>${r.positions}</td><td>${r.deadline}</td><td class="${r.status}">${r.status}</td>
+        <td>
+          <button onclick="viewOne(${r.id})">View</button>
+          <button class="grey" onclick="editOne(${r.id})">Edit</button>
+          ${r.status === "Open" ? `<button class="warn" onclick="closeOne(${r.id})">Close</button>` : ""}
+          <button class="danger" onclick="removeOne(${r.id})">Delete</button>
+        </td>
+      </tr>`).join("") || `<tr><td colspan="7">No opportunities yet.</td></tr>`;
+  } catch (e) { showMsg(e.message, false); }
+}
+
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+async function viewOne(id) {
+  try {
+    const r = await request(`${API}/${id}`);
+    const box = document.getElementById("details");
+    box.style.display = "block";
+    box.innerHTML = `<h3>${esc(r.title)} <span class="${r.status}">(${r.status})</span></h3>
+      <p>${esc(r.description)}</p>
+      <p><b>Area:</b> ${esc(r.research_area)} | <b>Faculty:</b> ${esc(r.faculty_name)} | <b>Department:</b> ${esc(r.department)}</p>
+      <p><b>Skills:</b> ${esc(r.required_skills)} | <b>Positions:</b> ${r.positions} | <b>Deadline:</b> ${r.deadline}</p>
+      <button class="grey" onclick="this.parentElement.style.display='none'">Hide</button>`;
+  } catch (e) { showMsg(e.message, false); loadAll(); }
+}
+
+async function editOne(id) {
+  try {
+    const r = await request(`${API}/${id}`);
+    FIELDS.forEach(f => document.getElementById(f).value = r[f]);
+    document.getElementById("id").value = r.id;
+    document.getElementById("formTitle").textContent = "Update Opportunity #" + r.id;
+    window.scrollTo(0, document.body.scrollHeight);
+  } catch (e) { showMsg(e.message, false); loadAll(); }
+}
+
+async function closeOne(id) {
+  try { await request(`${API}/${id}`, "PUT", {status: "Closed"}); showMsg("Opportunity closed", true); loadAll(); }
+  catch (e) { showMsg(e.message, false); }
+}
+
+async function removeOne(id) {
+  if (!confirm("Delete this opportunity?")) return;
+  try { await request(`${API}/${id}`, "DELETE"); showMsg("Opportunity deleted", true); loadAll(); document.getElementById("details").style.display = "none"; }
+  catch (e) { showMsg(e.message, false); loadAll(); }
+}
+
+function resetForm() {
+  document.getElementById("form").reset();
+  document.getElementById("id").value = "";
+  document.getElementById("formTitle").textContent = "Add New Opportunity";
+  document.querySelectorAll(".err").forEach(e => e.textContent = "");
+}
+
+// Basic client-side validation
+function validateForm() {
+  let ok = true;
+  document.querySelectorAll(".err").forEach(e => e.textContent = "");
+  REQUIRED.forEach(f => {
+    const v = document.getElementById(f).value.trim();
+    let msg = "";
+    if (!v) msg = "This field is required";
+    else if (f === "positions" && Number(v) < 1) msg = "Must be at least 1";
+    if (msg) { document.querySelector(`[data-for="${f}"]`).textContent = msg; ok = false; }
+  });
+  return ok;
+}
+
+document.getElementById("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!validateForm()) { showMsg("Please fix the highlighted fields", false); return; }
+  const body = {};
+  FIELDS.forEach(f => body[f] = document.getElementById(f).value.trim());
+  body.positions = Number(body.positions);
+  const id = document.getElementById("id").value;
+  try {
+    if (id) { await request(`${API}/${id}`, "PUT", body); showMsg("Opportunity updated", true); }
+    else { await request(API, "POST", body); showMsg("Opportunity created", true); }
+    resetForm(); loadAll();
+  } catch (err) { showMsg(err.message, false); }
+});
+
+loadAll();
+</script>
+</body>
+</html>
