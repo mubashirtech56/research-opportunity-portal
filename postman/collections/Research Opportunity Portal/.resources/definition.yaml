@@ -1,0 +1,13 @@
+$kind: collection
+name: Research Opportunity Portal
+description: |-
+  API tests for the University Research Opportunity Portal (Flask + MySQL).
+
+  Run the requests in order: create three opportunities, read all, read one,
+  update one, close one, delete one, request the deleted one (expect 404), and
+  finally send invalid data (expect 400).
+
+  Importable in Postman. The same workflow is exported as a single file in
+  Research_Portal.postman_collection.json for submission.
+variables:
+  baseUrl: http://localhost:5000

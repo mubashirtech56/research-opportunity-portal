@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/opportunities/1"
+method: GET
+headers:
+  Content-Type: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Response is the opportunity with id 1", function () {
+        const body = pm.response.json();
+        pm.expect(body.id).to.eql(1);
+        pm.expect(body).to.have.property("title");
+      });
+    language: text/javascript
+order: 5000

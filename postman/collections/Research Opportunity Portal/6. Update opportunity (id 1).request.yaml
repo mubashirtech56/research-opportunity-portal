@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/opportunities/1"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "title": "Network Intrusion Detection System",
+      "positions": 4,
+      "required_skills": "Python, Networking, Wireshark"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Returned opportunity reflects the update", function () {
+        const body = pm.response.json();
+        pm.expect(body.title).to.eql("Network Intrusion Detection System");
+        pm.expect(body.positions).to.eql(4);
+      });
+    language: text/javascript
+order: 6000

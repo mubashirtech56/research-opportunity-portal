@@ -33,14 +33,18 @@ MariaDB / MySQL database (research_portal)
 
 ## Project structure
 
-| File / Folder                             | What it does                                                    |
-| ----------------------------------------- | --------------------------------------------------------------- |
-| `app.py`                                  | The backend: all 5 API routes, input validation, error handling |
-| `schema.sql`                              | Creates the database and the `opportunities` table              |
-| `static/index.html`                       | The frontend: table, details view, create/edit form, messages   |
-| `requirements.txt`                        | Python packages to install (Flask, mysql-connector-python)      |
-| `Research_Portal.postman_collection.json` | Ready-made API tests (import into Postman or Bruno)             |
-| `.gitignore`                              | Keeps `venv/` and secrets out of GitHub                         |
+| File / Folder                                            | What it does                                                         |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `app.py`                                                 | The backend: all 5 API routes, input validation, error handling      |
+| `schema.sql`                                             | Creates the database and the `opportunities` table                   |
+| `static/index.html`                                      | The frontend: table, details view, create/edit form, messages        |
+| `requirements.txt`                                       | Python packages to install (Flask, mysql-connector-python)           |
+| `postman/Research_Portal.postman_collection.json`        | Exported Postman collection with 10 requests and 20 assertions       |
+| `postman/collections/Research Opportunity Portal/`       | Same collection in Postman's Git-friendly YAML source format         |
+| `testing/newman_report.html`                             | HTML report produced by running the collection with Newman           |
+| `testing/run_tests.py`                                   | Starts the server and runs the collection with Newman in one step    |
+| `testing/screenshots/`                                   | Postman request/response captures and the API test report            |
+| `.gitignore`                                             | Keeps `venv/` and secrets out of GitHub                              |
 
 ## Setup (Arch Linux / Omarchy)
 
@@ -150,20 +154,44 @@ Base URL: `http://localhost:5000`
 
 **Status codes:** `200` OK, `201` Created, `400` Bad Request (invalid or missing data), `404` Not Found (ID or route does not exist), `500` Internal Server Error (unexpected or database failure).
 
-## Testing with Postman / Bruno
+## Testing with Postman
 
-Import `Research_Portal.postman_collection.json` and run the requests in order:
+The collection lives at `postman/Research_Portal.postman_collection.json`. Import it
+into Postman and run the requests in order (each request carries automated
+assertions, so Postman shows a green pass for every step):
 
-1. Create three opportunities
-2. Get all
-3. Get one by ID
-4. Update one
-5. Close one (Open to Closed)
-6. Delete one
-7. Request the deleted one again (returns 404)
-8. Send invalid data (returns 400)
+| #   | Request                          | Expected result            |
+| --- | -------------------------------- | -------------------------- |
+| 1   | Create opportunity #1            | 201 Created                |
+| 2   | Create opportunity #2            | 201 Created                |
+| 3   | Create opportunity #3            | 201 Created                |
+| 4   | Get all opportunities            | 200 OK (array, 3+ items)   |
+| 5   | Get one opportunity (id 1)       | 200 OK                     |
+| 6   | Update opportunity (id 1)        | 200 OK (fields changed)    |
+| 7   | Close opportunity (id 2)         | 200 OK (Open to Closed)    |
+| 8   | Delete opportunity (id 3)        | 200 OK                     |
+| 9   | Get deleted opportunity (id 3)   | 404 Not Found              |
+| 10  | Invalid create (empty, bad data) | 400 Bad Request            |
 
 The collection uses a `baseUrl` variable set to `http://localhost:5000`.
+
+### Running the tests headlessly (Newman)
+
+With the server running and `newman` + `newman-reporter-html` installed
+(`npm install -g newman newman-reporter-html`), run:
+
+```
+newman run postman/Research_Portal.postman_collection.json -r cli,html --reporter-html-export testing/newman_report.html
+```
+
+Or use the helper script, which starts the server for you and then runs the
+collection:
+
+```
+python testing/run_tests.py
+```
+
+Both produce `testing/newman_report.html` (10 requests, 20 assertions, 0 failures).
 
 ## Troubleshooting
 

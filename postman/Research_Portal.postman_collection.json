@@ -1,0 +1,356 @@
+{
+  "info": {
+    "name": "Research Opportunity Portal",
+    "description": "API tests for the University Research Opportunity Portal (Flask + MySQL). Run the requests in order: create three opportunities, read all, read one, update one, close one, delete one, request the deleted one (404), and finally send invalid data (400).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create opportunity #1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response contains the created opportunity\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property(\"id\");",
+              "  pm.expect(body.title).to.eql(\"Network Intrusion Detection\");",
+              "  pm.expect(body.status).to.eql(\"Open\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Network Intrusion Detection\",\n  \"description\": \"Research work on network intrusion detection\",\n  \"research_area\": \"Cyber Security\",\n  \"faculty_name\": \"Dr. Ahmed Khan\",\n  \"department\": \"Computer Science\",\n  \"required_skills\": \"Python, Networking\",\n  \"positions\": 2,\n  \"deadline\": \"2026-12-31\",\n  \"status\": \"Open\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Create opportunity #2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response contains the created opportunity\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property(\"id\");",
+              "  pm.expect(body.title).to.eql(\"IoT Sensor Networks\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"IoT Sensor Networks\",\n  \"description\": \"Research work on iot sensor networks\",\n  \"research_area\": \"IoT\",\n  \"faculty_name\": \"Dr. Sara Ali\",\n  \"department\": \"Electrical Engineering\",\n  \"required_skills\": \"C, Embedded\",\n  \"positions\": 3,\n  \"deadline\": \"2026-12-15\",\n  \"status\": \"Open\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Create opportunity #3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response contains the created opportunity\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property(\"id\");",
+              "  pm.expect(body.title).to.eql(\"Machine Learning for Healthcare\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Machine Learning for Healthcare\",\n  \"description\": \"Research work on machine learning for healthcare\",\n  \"research_area\": \"AI\",\n  \"faculty_name\": \"Dr. Usman Shah\",\n  \"department\": \"Computer Science\",\n  \"required_skills\": \"Python, ML\",\n  \"positions\": 1,\n  \"deadline\": \"2027-01-10\",\n  \"status\": \"Open\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Get all opportunities",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array of opportunities\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.be.an(\"array\");",
+              "  pm.expect(body.length).to.be.at.least(3);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities"
+      }
+    },
+    {
+      "name": "5. Get one opportunity (id 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is the opportunity with id 1\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.eql(1);",
+              "  pm.expect(body).to.have.property(\"title\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities/1"
+      }
+    },
+    {
+      "name": "6. Update opportunity (id 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Returned opportunity reflects the update\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.title).to.eql(\"Network Intrusion Detection System\");",
+              "  pm.expect(body.positions).to.eql(4);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities/1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Network Intrusion Detection System\",\n  \"positions\": 4,\n  \"required_skills\": \"Python, Networking, Wireshark\"\n}"
+        }
+      }
+    },
+    {
+      "name": "7. Close opportunity (id 2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Status changed from Open to Closed\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.status).to.eql(\"Closed\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities/2",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Closed\"\n}"
+        }
+      }
+    },
+    {
+      "name": "8. Delete opportunity (id 3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response confirms the deletion\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.message).to.eql(\"Opportunity deleted\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities/3"
+      }
+    },
+    {
+      "name": "9. Get deleted opportunity (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404 Not Found\", function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response contains an error message\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property(\"error\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities/3"
+      }
+    },
+    {
+      "name": "10. Invalid create (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Validation error is returned\", function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property(\"error\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/opportunities",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"positions\": -1\n}"
+        }
+      }
+    }
+  ]
+}

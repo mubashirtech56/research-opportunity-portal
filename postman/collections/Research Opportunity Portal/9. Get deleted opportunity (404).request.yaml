@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/opportunities/3"
+method: GET
+headers:
+  Content-Type: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 404 Not Found", function () {
+        pm.response.to.have.status(404);
+      });
+
+      pm.test("Response contains an error message", function () {
+        const body = pm.response.json();
+        pm.expect(body).to.have.property("error");
+      });
+    language: text/javascript
+order: 9000

@@ -1,0 +1,33 @@
+$kind: http-request
+url: "{{baseUrl}}/api/opportunities"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "title": "Machine Learning for Healthcare",
+      "description": "Research work on machine learning for healthcare",
+      "research_area": "AI",
+      "faculty_name": "Dr. Usman Shah",
+      "department": "Computer Science",
+      "required_skills": "Python, ML",
+      "positions": 1,
+      "deadline": "2027-01-10",
+      "status": "Open"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+        pm.response.to.have.status(201);
+      });
+
+      pm.test("Response contains the created opportunity", function () {
+        const body = pm.response.json();
+        pm.expect(body).to.have.property("id");
+        pm.expect(body.title).to.eql("Machine Learning for Healthcare");
+      });
+    language: text/javascript
+order: 3000

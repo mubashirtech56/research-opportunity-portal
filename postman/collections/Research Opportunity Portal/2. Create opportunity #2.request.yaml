@@ -1,0 +1,33 @@
+$kind: http-request
+url: "{{baseUrl}}/api/opportunities"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "title": "IoT Sensor Networks",
+      "description": "Research work on iot sensor networks",
+      "research_area": "IoT",
+      "faculty_name": "Dr. Sara Ali",
+      "department": "Electrical Engineering",
+      "required_skills": "C, Embedded",
+      "positions": 3,
+      "deadline": "2026-12-15",
+      "status": "Open"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+        pm.response.to.have.status(201);
+      });
+
+      pm.test("Response contains the created opportunity", function () {
+        const body = pm.response.json();
+        pm.expect(body).to.have.property("id");
+        pm.expect(body.title).to.eql("IoT Sensor Networks");
+      });
+    language: text/javascript
+order: 2000
